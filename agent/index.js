@@ -1,26 +1,23 @@
-// agent/index.js
-// SYNCHRON–X Agent Launcher
+// agent/index.js – SYNCHRON-X Agent API
 
-const path = require("path");
-const systemConfig = require("../src/config/system");
-const logger = require("../src/utils/logger");
-const TaskRunner = require("./core/taskRunner");
+const express = require("express");
+const router = express.Router();
 
-async function launchAgent() {
-  logger.info("🟦 SYNCHRON–X Agent starting…");
+const heartbeatTask = require("./tasks/heartbeat.task");
 
-  const taskRunner = new TaskRunner(systemConfig, logger);
+// GET /agent/status
+router.get("/status", (req, res) => {
+  res.json({
+    agent: "SYNCHRON-X Agent",
+    status: "online",
+    time: new Date().toISOString(),
+  });
+});
 
-  // Load tasks folder
-  const tasksDir = path.join(__dirname, "tasks");
-  taskRunner.loadTasks(tasksDir);
+// GET /agent/heartbeat
+router.get("/heartbeat", async (req, res) => {
+  const result = await heartbeatTask();
+  res.json(result);
+});
 
-  // Run heartbeat task every 10 seconds
-  setInterval(async () => {
-    await taskRunner.runTask("heartbeat");
-  }, 10 * 1000);
-
-  logger.info("🟩 Agent is online and running tasks.");
-}
-
-launchAgent();
+module.exports = router;
