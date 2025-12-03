@@ -1,17 +1,41 @@
-// server.js — SYNCHRON-X backend glue layer
+// server.js — SYNCHRON-X backend layer
 
 const express = require("express");
 const app = express();
+
 const systemConfig = require("./src/config/system");
 const router = require("./src/routes/index");
 const errorHandler = require("./src/middlewares/errorHandler");
 
 app.use(express.json());
 
-// Base API route
-app.use("/api", router);
+/* ------------------------------------------
+   BASIC ROOT ROUTES (for DO health + testing)
+------------------------------------------- */
 
-// System heartbeat route (SYNCHRON-X core)
+app.get("/", (req, res) => {
+  res.send("Novarium backend is running");
+});
+
+app.get("/ping", (req, res) => {
+  res.json({
+    status: "ok",
+    time: new Date().toISOString(),
+  });
+});
+
+app.get("/health", (req, res) => {
+  res.json({
+    service: "novarium-backend",
+    status: "healthy",
+    time: new Date().toISOString(),
+  });
+});
+
+/* ------------------------------------------
+   SYSTEM HEARTBEAT (original)
+------------------------------------------- */
+
 app.get("/system", (req, res) => {
   res.json({
     system: systemConfig.SYSTEM,
@@ -21,11 +45,23 @@ app.get("/system", (req, res) => {
   });
 });
 
-// Global error handler
+/* ------------------------------------------
+   BASE API ROUTER
+------------------------------------------- */
+
+app.use("/api", router);
+
+/* ------------------------------------------
+   GLOBAL ERROR HANDLER
+------------------------------------------- */
+
 app.use(errorHandler);
 
-// Server start
-const PORT = process.env.PORT || 3000;
+/* ------------------------------------------
+   SERVER START
+------------------------------------------- */
+
+const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
   console.log(`SYNCHRON-X backend running on port ${PORT}`);
 });
