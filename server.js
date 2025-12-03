@@ -62,6 +62,21 @@ app.use(errorHandler);
 ------------------------------------------- */
 
 const PORT = process.env.PORT || 8080;
+const express = require("express");
+const router = express.Router();
+
+const agent = require("../agent/index");
+
+// Base test
+router.get("/", (req, res) => {
+  res.json({ api: "Novarium backend API is online" });
+});
+
+// Agent routes
+router.use("/agent", agent);
+
+module.exports = router;
 app.listen(PORT, () => {
   console.log(`SYNCHRON-X backend running on port ${PORT}`);
 });
+app.use("/api", router);
