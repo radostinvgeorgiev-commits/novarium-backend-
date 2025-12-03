@@ -1,18 +1,20 @@
-// server.js — SYNCHRON-X backend layer
+// server.js — SYNCHRON-X unified backend layer
 
 const express = require("express");
 const app = express();
 
 const systemConfig = require("./src/config/system");
-const router = require("./src/routes/index");
+const apiRouter = require("./src/routes/index");
 const errorHandler = require("./src/middlewares/errorHandler");
+
+// AGENT
+const agentRouter = require("./agent/index");
 
 app.use(express.json());
 
-/* ------------------------------------------
-   BASIC ROOT ROUTES (for DO health + testing)
-------------------------------------------- */
-
+/* -----------------------------------------------
+   BASIC HEALTH CHECK ROUTES 
+------------------------------------------------- */
 app.get("/", (req, res) => {
   res.send("Novarium backend is running");
 });
@@ -32,10 +34,9 @@ app.get("/health", (req, res) => {
   });
 });
 
-/* ------------------------------------------
+/* -----------------------------------------------
    SYSTEM HEARTBEAT (original)
-------------------------------------------- */
-
+------------------------------------------------- */
 app.get("/system", (req, res) => {
   res.json({
     system: systemConfig.SYSTEM,
@@ -45,38 +46,25 @@ app.get("/system", (req, res) => {
   });
 });
 
-/* ------------------------------------------
-   BASE API ROUTER
-------------------------------------------- */
+/* -----------------------------------------------
+   API ROUTES
+------------------------------------------------- */
+app.use("/api", apiRouter);
 
-app.use("/api", router);
+/* -----------------------------------------------
+   AGENT ROUTES
+------------------------------------------------- */
+app.use("/agent", agentRouter);
 
-/* ------------------------------------------
+/* -----------------------------------------------
    GLOBAL ERROR HANDLER
-------------------------------------------- */
-
+------------------------------------------------- */
 app.use(errorHandler);
 
-/* ------------------------------------------
+/* -----------------------------------------------
    SERVER START
-------------------------------------------- */
-
+------------------------------------------------- */
 const PORT = process.env.PORT || 8080;
-const express = require("express");
-const router = express.Router();
-
-const agent = require("../agent/index");
-
-// Base test
-router.get("/", (req, res) => {
-  res.json({ api: "Novarium backend API is online" });
-});
-
-// Agent routes
-router.use("/agent", agent);
-
-module.exports = router;
-app.listen(PORT, () => {
-  console.log(`SYNCHRON-X backend running on port ${PORT}`);
-});
-app.use("/api", router);
+app.listen(PORT, () =>
+  console.log(`SYNCHRON-X backend running on port ${PORT}`)
+);
